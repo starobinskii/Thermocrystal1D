@@ -10,6 +10,9 @@ void thermocrystal1D(
     const std::string filename,
     const std::string waveType,
     const double dispersion = 1.,
+    const double maximumTime = 100000,
     size_t length = 1000,
-    const bool saveVelocities = false
+    const bool saveVelocities = false,
+    const double dt = 0.05,
+    const bool runningFromCLI = false
 );

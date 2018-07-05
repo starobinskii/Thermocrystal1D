@@ -20,8 +20,11 @@ void thermocrystal1D(
     const std::string filename,
     const std::string waveType,
     const double dispersion = 1.,
+    const double maximumTime = 100000,
     size_t length = 1000,
-    const bool saveVelocities = false
+    const bool saveVelocities = false,
+    const double dt = 0.05,
+    const bool runningFromCLI = false
 ){
     
     bool runningWaveFlag = false;
@@ -32,17 +35,16 @@ void thermocrystal1D(
     const size_t size = (size_t) MPI::COMM_WORLD.Get_size();
     
     const double dx = 1.;
-    const double dt = 0.05;
     const double alpha = 1.;
     const double amplitude = 0.02;
     const double omegaSquare = 1.;
-    const double maximumTime = 115000;
     
-    std::cout << "Incoming parameters:" << std::endl
-        << waveType << " wave with " << length << " particles," << std::endl
-        << "dispersion is " << dispersion << ", time is " << maximumTime 
-        << std::endl << "cluster size is " << size << std::endl;
-    
+    if(!runningFromCLI){
+        std::cout << "Incoming parameters:" << std::endl
+            << waveType << " wave with " << length << " particles," << std::endl
+            << "dispersion is " << dispersion << ", time is " << maximumTime 
+            << std::endl << "cluster size is " << size << std::endl;
+    }
     
     std::vector<double> displacement(length + 2, 0.);
     std::vector<double> velocity(length + 2, 0.);
@@ -140,12 +142,13 @@ void thermocrystal1D(
                     (int) length, MPI::DOUBLE, MPI::SUM, 0);
                 
                 if(0 == rank){
-                    velocityOutput.resize(velocityOutput.size() + 1);
-                
-                    const size_t lastIndex = velocityOutput.size() - 1;
+                    std::vector<double> velocityBuffer;
+                    
                     for(size_t i = 0; i < length; ++i){
-                        velocityOutput[lastIndex].push_back(arrayBuffer[i]);
+                        velocityBuffer.push_back(arrayBuffer[i]);
                     }
+                    
+                    velocityOutput.push_back(velocityBuffer);
                 }
             }
             
@@ -171,7 +174,9 @@ void thermocrystal1D(
             if(0 == rank){
                 energyOutput.push_back(valueBuffer);
                 
-                ai::showProgressBar(currentTime / maximumTime);
+                if(!runningFromCLI){
+                    ai::showProgressBar(currentTime / maximumTime);
+                }
             }
         }
         
@@ -189,7 +194,7 @@ void thermocrystal1D(
         }
     }
     
-    if(0 == rank){
+    if(0 == rank && !runningFromCLI){
         ai::showProgressBar(1.);
     }
     

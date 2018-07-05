@@ -114,24 +114,24 @@ namespace ai{
         std::string type = std::string("text"),
         std::string delimiter = std::string(" ")
     ){
-        std::string extension("_v.txt");
+        std::string extension("_m.txt");
         std::string prefix("");
         std::string suffix("");
 
         if(std::string("wolfram") == type){
-            extension = std::string("_v.wm");
+            extension = std::string("_m.wm");
             prefix = std::string("{");
             delimiter = std::string(", ");
             suffix = std::string("}");
         }
 
         if(std::string("excel") == type){
-            extension = std::string("_v.csv");
+            extension = std::string("_m.csv");
             delimiter = std::string("; ");
         }
 
         if(std::string("data") == type){
-            extension = std::string("_v.dat");
+            extension = std::string("_m.dat");
             delimiter = std::string("\t");
         }
         

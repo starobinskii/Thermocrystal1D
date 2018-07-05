@@ -8,18 +8,20 @@ int main(int argc, char *argv[]){
     bool standingWave = false;
     bool runningWave = false;
     bool saveVelocities = false;
+    bool runningFromCLI = false;
     
     size_t id = 0;
     size_t length = 1000;
     
     double dispersion = 1.;
+    double modelingTime = 100000;
     
     std::string path("./");    
     std::string filename("");
     
     for(int i = 1; i < argc; ++i){
         if("-h" == std::string(argv[i]) || "--help" == std::string(argv[i])){
-            std::cout << "usage: averageMatrix [options]"
+            std::cout << "usage: ./thermocrystal1D [options]"
                 << std::endl
                 << "    -h  --help            print this usage and exit"
                 << std::endl<< std::endl
@@ -37,6 +39,8 @@ int main(int argc, char *argv[]){
                 << "    --dispersion=<value>  ratio of thermal energy to "
                 << "mechanic energy [double]"
                 << std::endl
+                << "    --time=<value>        modeling time [double]"
+                << std::endl
                 << "    --save-velocities     flag to save velocities [bool]"
                 << std::endl
                 << "    --standing-wave       flag to calculate a stanging "
@@ -44,6 +48,8 @@ int main(int argc, char *argv[]){
                 << std::endl
                 << "    --running-wave        flag to calculate a running "
                 << "wave [bool]"
+                << std::endl
+                << "    --env=cli             flag for CLI execution [bool]"
                 << std::endl;
             
             return 0;
@@ -55,20 +61,25 @@ int main(int argc, char *argv[]){
             || ai::assignParameter(argv[i], "--id=", id)
             || ai::assignParameter(argv[i], "--length=", length)
             || ai::assignParameter(argv[i], "--dispersion=", dispersion)
+            || ai::assignParameter(argv[i], "--time=", modelingTime)
             || ai::assignBooleanParameter(argv[i], "--save-velocities", 
                 saveVelocities)
             || ai::assignBooleanParameter(argv[i], "--standing-wave", 
                 standingWave)
             || ai::assignBooleanParameter(argv[i], "--running-wave", 
                 runningWave)
+            || ai::assignBooleanParameter(argv[i], "--env=cli", 
+                runningFromCLI)
         ){
             continue;
         }
     }
     
     if(!standingWave && !runningWave){
-        std::cout << "No wave has been specified. Go with a running wave."
-            << std::endl;
+        if(!runningFromCLI){
+            std::cout << "No wave has been specified. Go with a running wave."
+                << std::endl;
+        }
         runningWave = true;
     }
     
@@ -76,34 +87,51 @@ int main(int argc, char *argv[]){
         path += std::string("/");
     }
     
-    path += filename;
+    const std::string folder(path);
     
-    if(0 < id){
-        filename += ai::string(id);
-    }
+    path += filename;
     
     MPI::Init();
     
+    const size_t rank = (size_t) MPI::COMM_WORLD.Get_rank();
+    const size_t size = (size_t) MPI::COMM_WORLD.Get_size();
+    
     if(runningWave){
         thermocrystal1D(
-            path + std::string("rw"),
+            path + ai::string("rw_") + ai::string(id),
             std::string("running"),
             dispersion,
-            length, 
-            saveVelocities
+            modelingTime,
+            length,
+            saveVelocities,
+            0.05,
+            runningFromCLI
         );
     }
     
     MPI::COMM_WORLD.Barrier();
+    
     if(standingWave){
         thermocrystal1D(
-            path + std::string("sw"),
+            path + ai::string("sw") + ai::string(id),
             std::string("standing"),
             dispersion,
+            modelingTime,
             length,
-            saveVelocities
+            saveVelocities,
+            0.05,
+            runningFromCLI
         );
     }
+    
+    if(0 == rank){
+        ai::saveVector(
+            folder + ai::string("output") + ai::string(id),
+            std::vector<double>{(double) length, dispersion, (double) size},
+            std::string("#Length; dispersion; cluster size")
+        );
+    }
+    
     MPI::Finalize();
     
     return 0;
