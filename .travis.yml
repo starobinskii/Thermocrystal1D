@@ -125,5 +125,4 @@ env:
     ARMCI_USE_WIN_ALLOCATE=1
 before_install:
 install: make
-script:
-after_failure:
+script: echo $MPI_IMPL
