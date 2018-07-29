@@ -1,3 +1,5 @@
+#https://travis-ci.org/starobinskii/Thermocrystal1D
+
 sudo: false
 language: c++
 os:
@@ -124,5 +126,11 @@ env:
     ARMCI_IOV_METHOD=BATCHED
     ARMCI_USE_WIN_ALLOCATE=1
 before_install:
+  - echo $MPI_IMPL
+  - mpicc -showme
+  - mpicxx -showme
+  - mpic++ -showme
 install: make
-script: echo $MPI_IMPL
+script: 
+  - echo $MPI_IMPL
+  - mpiexec -n 1 ./Executions/task -h
