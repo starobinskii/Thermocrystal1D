@@ -113,7 +113,7 @@ int main(int argc, char *argv[]){
     
     if(standingWave){
         thermocrystal1D(
-            path + ai::string("sw") + ai::string(id),
+            path + ai::string("sw_") + ai::string(id),
             std::string("standing"),
             dispersion,
             modelingTime,
