@@ -36,7 +36,7 @@ void thermocrystal1D(
     
     const double dx = 1.;
     const double alpha = 1.;
-    const double amplitude = 0.02;
+    double amplitude = 0.02;
     const double omegaSquare = 1.;
     
     if(!runningFromCLI){
@@ -51,6 +51,9 @@ void thermocrystal1D(
     
     if(std::string("running") == waveType){
         runningWaveFlag = true;
+        /*/ running wave goes both way /*/
+        /*/ we calculate propagation only in one direction /*/
+        amplitude = 0.01;
     }
     
     size_t step = 0;
@@ -58,7 +61,6 @@ void thermocrystal1D(
     double currentTime = 0.;
     /*/ need in case of a running wave only /*/
     const double shiftTime = dx / sqrt(omegaSquare);
-    double previousTime = shiftTime;
     double savedTime = 0.;
     
     double *arrayBuffer;
