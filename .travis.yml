@@ -1,0 +1,129 @@
+sudo: false
+language: c++
+os:
+  - osx
+  - linux
+compiler:
+  - clang
+  - gcc
+matrix:
+  allow_failures:
+    - env: MPI_IMPL=openmpi
+      os: osx
+    - env: MPI_IMPL=openmpi
+           ARMCI_STRIDED_METHOD=DIRECT
+           ARMCI_IOV_METHOD=DIRECT
+           ARMCI_USE_WIN_ALLOCATE=0
+      os: osx
+    - env: MPI_IMPL=openmpi
+           ARMCI_STRIDED_METHOD=DIRECT
+           ARMCI_IOV_METHOD=DIRECT
+           ARMCI_USE_WIN_ALLOCATE=1
+      os: osx
+    - env: MPI_IMPL=openmpi
+           ARMCI_STRIDED_METHOD=DIRECT
+           ARMCI_IOV_METHOD=DIRECT
+           ARMCI_USE_WIN_ALLOCATE=0
+           ARMCI_NO_FLUSH_LOCAL=1
+      os: osx
+    - env: MPI_IMPL=openmpi
+           ARMCI_STRIDED_METHOD=DIRECT
+           ARMCI_IOV_METHOD=DIRECT
+           ARMCI_USE_WIN_ALLOCATE=1
+           ARMCI_NO_FLUSH_LOCAL=1
+      os: osx
+    - env: MPI_IMPL=openmpi
+           ARMCI_STRIDED_METHOD=DIRECT
+           ARMCI_IOV_METHOD=DIRECT
+           ARMCI_USE_WIN_ALLOCATE=0
+      os: osx
+    - env: MPI_IMPL=openmpi
+           ARMCI_STRIDED_METHOD=DIRECT
+           ARMCI_IOV_METHOD=DIRECT
+           ARMCI_USE_WIN_ALLOCATE=1
+      os: osx
+    - env: MPI_IMPL=openmpi
+           ARMCI_STRIDED_METHOD=DIRECT
+           ARMCI_IOV_METHOD=DIRECT
+           ARMCI_NO_FLUSH_LOCAL=1
+           ARMCI_USE_WIN_ALLOCATE=0
+      os: osx
+    - env: MPI_IMPL=openmpi
+           ARMCI_STRIDED_METHOD=DIRECT
+           ARMCI_IOV_METHOD=DIRECT
+           ARMCI_NO_FLUSH_LOCAL=1
+           ARMCI_USE_WIN_ALLOCATE=1
+      os: osx
+    - env: MPI_IMPL=openmpi
+           ARMCI_STRIDED_METHOD=IOV
+           ARMCI_IOV_METHOD=BATCHED
+           ARMCI_USE_WIN_ALLOCATE=0
+      os: osx
+    - env: MPI_IMPL=openmpi
+           ARMCI_STRIDED_METHOD=IOV
+           ARMCI_IOV_METHOD=BATCHED
+           ARMCI_USE_WIN_ALLOCATE=1
+      os: osx
+env:
+  #
+  # Test the default config since that is what Debian users will get.
+  #
+  - MPI_IMPL=mpich
+  - MPI_IMPL=openmpi
+  #
+  # MPICH
+  #
+  # with datatypes
+  - MPI_IMPL=mpich
+    ARMCI_STRIDED_METHOD=DIRECT
+    ARMCI_IOV_METHOD=DIRECT
+    ARMCI_USE_WIN_ALLOCATE=0
+  - MPI_IMPL=mpich
+    ARMCI_STRIDED_METHOD=DIRECT
+    ARMCI_IOV_METHOD=DIRECT
+    ARMCI_USE_WIN_ALLOCATE=1
+  # without datatypes
+  - MPI_IMPL=mpich
+    ARMCI_STRIDED_METHOD=IOV
+    ARMCI_IOV_METHOD=BATCHED
+    ARMCI_USE_WIN_ALLOCATE=0
+  - MPI_IMPL=mpich
+    ARMCI_STRIDED_METHOD=IOV
+    ARMCI_IOV_METHOD=BATCHED
+    ARMCI_USE_WIN_ALLOCATE=1
+  #
+  # Open-MPI
+  #
+  # with datatypes
+  - MPI_IMPL=openmpi
+    ARMCI_STRIDED_METHOD=DIRECT
+    ARMCI_IOV_METHOD=DIRECT
+    ARMCI_USE_WIN_ALLOCATE=0
+  - MPI_IMPL=openmpi
+    ARMCI_STRIDED_METHOD=DIRECT
+    ARMCI_IOV_METHOD=DIRECT
+    ARMCI_USE_WIN_ALLOCATE=1
+  # deal with ordering issue
+  - MPI_IMPL=openmpi
+    ARMCI_STRIDED_METHOD=DIRECT
+    ARMCI_IOV_METHOD=DIRECT
+    ARMCI_NO_FLUSH_LOCAL=1
+    ARMCI_USE_WIN_ALLOCATE=0
+  - MPI_IMPL=openmpi
+    ARMCI_STRIDED_METHOD=DIRECT
+    ARMCI_IOV_METHOD=DIRECT
+    ARMCI_NO_FLUSH_LOCAL=1
+    ARMCI_USE_WIN_ALLOCATE=1
+  # without datatypes
+  - MPI_IMPL=openmpi
+    ARMCI_STRIDED_METHOD=IOV
+    ARMCI_IOV_METHOD=BATCHED
+    ARMCI_USE_WIN_ALLOCATE=0
+  - MPI_IMPL=openmpi
+    ARMCI_STRIDED_METHOD=IOV
+    ARMCI_IOV_METHOD=BATCHED
+    ARMCI_USE_WIN_ALLOCATE=1
+before_install:
+install: make
+script:
+after_failure:
