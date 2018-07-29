@@ -7,13 +7,14 @@
 
 #*# ************************************************************************ #*#
 
-CC = mpic++
+CC = g++
 
 CFLAGS = -w -std=c++11 -O3
+CFLAGS += $(shell mpicxx -showme:compile)
 
 INCLUDES = 
 
-LFLAGS = 
+LFLAGS = $(shell mpicxx -showme:link)
 
 LIBS = 
 
