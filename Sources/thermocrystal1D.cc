@@ -2,8 +2,12 @@
 #include <fstream>
 #include <cstdlib>
 #include <random>
-#include "mpi.h"
+//#include "mpi.h"
 #include "ai.hh"
+
+#if !defined(M_PI)
+    #define M_PI 3.141593
+#endif
 
 void applyPeriodic(std::vector<double> &quantity){
     const size_t length = quantity.size();
@@ -31,8 +35,8 @@ void thermocrystal1D(
     
     const size_t stepToSaveData = 3000;
     const size_t precision = 100000000;
-    const size_t rank = (size_t) MPI::COMM_WORLD.Get_rank();
-    const size_t size = (size_t) MPI::COMM_WORLD.Get_size();
+    //const size_t rank = (size_t) MPI_COMM_WORLD.Get_rank();
+    //const size_t size = (size_t) MPI_COMM_WORLD.Get_size();
     
     const double dx = 1.;
     const double alpha = 1.;
@@ -43,7 +47,7 @@ void thermocrystal1D(
         std::cout << "Incoming parameters:" << std::endl
             << waveType << " wave with " << length << " particles," << std::endl
             << "dispersion is " << dispersion << ", time is " << maximumTime 
-            << std::endl << "cluster size is " << size << std::endl;
+            << std::endl << "cluster size is " << 1 << std::endl;
     }
     
     std::vector<double> displacement(length + 2, 0.);
@@ -63,22 +67,22 @@ void thermocrystal1D(
     const double shiftTime = dx / sqrt(omegaSquare);
     double savedTime = 0.;
     
-    double *arrayBuffer;
-    double *velocityArray;
+    // double *arrayBuffer;
+    // double *velocityArray;
     
-    double valueBuffer = 0;
+    // double valueBuffer = 0;
     
     std::vector<double> energyOutput;
     
     std::vector< std::vector<double> > velocityOutput;
     
-    if(saveVelocities){
-        velocityArray = new double[length];
+    // if(saveVelocities){
+    //     velocityArray = new double[length];
         
-        if(0 == rank){
-            arrayBuffer = new double[size * length];
-        }
-    }
+    //     if(0 == rank){
+    //         arrayBuffer = new double[size * length];
+    //     }
+    // }
     
     std::random_device rd;
     srand(rd() * time(0));
@@ -134,25 +138,25 @@ void thermocrystal1D(
         if(stepToSaveData < step){
             step = 0;
             
-            if(saveVelocities){
-                /*/ gather the velocities /*/
-                for(size_t i = 1; i <= length; ++i){
-                    velocityArray[i - 1] = velocity[i];
-                }
+            // if(saveVelocities){
+            //     /*/ gather the velocities /*/
+            //     for(size_t i = 1; i <= length; ++i){
+            //         velocityArray[i - 1] = velocity[i];
+            //     }
                 
-                MPI::COMM_WORLD.Reduce(velocityArray, arrayBuffer, 
-                    (int) length, MPI::DOUBLE, MPI::SUM, 0);
+            //     MPI_COMM_WORLD.Reduce(velocityArray, arrayBuffer, 
+            //         (int) length, MPI_DOUBLE, MPI_SUM, 0);
                 
-                if(0 == rank){
-                    std::vector<double> velocityBuffer;
+            //     if(0 == rank){
+            //         std::vector<double> velocityBuffer;
                     
-                    for(size_t i = 0; i < length; ++i){
-                        velocityBuffer.push_back(arrayBuffer[i]);
-                    }
+            //         for(size_t i = 0; i < length; ++i){
+            //             velocityBuffer.push_back(arrayBuffer[i]);
+            //         }
                     
-                    velocityOutput.push_back(velocityBuffer);
-                }
-            }
+            //         velocityOutput.push_back(velocityBuffer);
+            //     }
+            // }
             
             /*/ calculating energy /*/
             double kineticEnergy = 0;
@@ -171,15 +175,15 @@ void thermocrystal1D(
             double energy = potentialEnergy + kineticEnergy;
             
             /*/ gather the energy /*/
-            MPI::COMM_WORLD.Reduce(&energy, &valueBuffer, 1, MPI::DOUBLE, MPI::SUM, 0);
+           // MPI_COMM_WORLD.Reduce(&energy, &valueBuffer, 1, MPI_DOUBLE, MPI_SUM, 0);
             
-            if(0 == rank){
-                energyOutput.push_back(valueBuffer);
+            //if(0 == rank){
+                energyOutput.push_back(energy);
                 
                 if(!runningFromCLI){
                     ai::showProgressBar(currentTime / maximumTime);
                 }
-            }
+            //}
         }
         
         /*/ in cave of a running wave move the wave forward /*/
@@ -196,24 +200,24 @@ void thermocrystal1D(
         }
     }
     
-    if(0 == rank && !runningFromCLI){
+    if(!runningFromCLI){
         ai::showProgressBar(1.);
     }
     
     /*/ saving the data /*/
-    if(0 == rank){
-        if(saveVelocities){
-            ai::saveMatrix(filename, velocityOutput);
-        }
+    // if(0 == rank){
+    //     if(saveVelocities){
+    //         ai::saveMatrix(filename, velocityOutput);
+    //     }
         
-        ai::saveVector(filename, energyOutput);
-    }
+    ai::saveVector(filename, energyOutput);
+    // }
     
-    if(saveVelocities){
-        delete [] velocityArray;
+    // if(saveVelocities){
+    //     delete [] velocityArray;
         
-        if(0 == rank){
-            delete [] arrayBuffer;
-        }
-    }
+    //     if(0 == rank){
+    //         delete [] arrayBuffer;
+    //     }
+    // }
 }

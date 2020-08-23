@@ -1,5 +1,5 @@
 #include <iostream>
-#include "mpi.h"
+//#include "mpi.h"
 #include "ai.hh"
 
 #include "thermocrystal1D.hh"
@@ -91,10 +91,13 @@ int main(int argc, char *argv[]){
     
     path += filename;
     
-    MPI::Init();
-    
-    const size_t rank = (size_t) MPI::COMM_WORLD.Get_rank();
-    const size_t size = (size_t) MPI::COMM_WORLD.Get_size();
+    //size_t rank;
+    //size_t size;
+
+    //MPI_Init(&rank, &size);
+
+    //std::cout << "rank = " << rank << std::endl;
+    //std::cout << "size = " << size << std::endl;
     
     if(runningWave){
         thermocrystal1D(
@@ -109,7 +112,7 @@ int main(int argc, char *argv[]){
         );
     }
     
-    MPI::COMM_WORLD.Barrier();
+    //MPI_COMM_WORLD.Barrier();
     
     if(standingWave){
         thermocrystal1D(
@@ -124,15 +127,15 @@ int main(int argc, char *argv[]){
         );
     }
     
-    if(0 == rank){
+    //if(0 == rank){
         ai::saveVector(
             folder + ai::string("output") + ai::string(id),
-            std::vector<double>{(double) length, dispersion, (double) size},
+            std::vector<double>{(double) length, dispersion, 1.},
             std::string("#Length; dispersion; cluster size")
         );
-    }
+    //}
     
-    MPI::Finalize();
+    //MPI_Finalize();
     
     return 0;
 }
